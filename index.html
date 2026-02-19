@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Bio Quiz Online</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #4CAF50, #1B5E20);
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+.container {
+    background: rgba(0,0,0,0.3);
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 600px;
+    margin: auto;
+}
+button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+}
+button:hover {
+    opacity: 0.8;
+}
+#timer {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧬 Bio Quiz Challenge</h1>
+    <div id="timer"></div>
+    <div id="quiz"></div>
+    <div id="result"></div>
+    <button onclick="restartGame()">เริ่มใหม่</button>
+</div>
+
+<script>
+const questions = [
+{q:"1) หน่วยพื้นฐานของสิ่งมีชีวิตคืออะไร?",
+ a:["อวัยวะ","เซลล์","เนื้อเยื่อ","โมเลกุล"], c:1},
+{q:"2) พืชสร้างอาหารด้วยกระบวนการอะไร?",
+ a:["การหายใจ","การสังเคราะห์ด้วยแสง","การย่อย","การหมัก"], c:1},
+{q:"3) ไมโทคอนเดรียทำหน้าที่อะไร?",
+ a:["สร้างโปรตีน","ผลิตพลังงาน","ควบคุมเซลล์","เก็บน้ำ"], c:1},
+{q:"4) การแบ่งเซลล์แบบปกติเรียกว่าอะไร?",
+ a:["ไมโอซิส","ไมโทซิส","บัดดิ้ง","ฟิชชัน"], c:1},
+{q:"5) หมู่เลือดใดให้เลือดได้ทุกหมู่?",
+ a:["A","B","AB","O"], c:3},
+{q:"6) ออร์แกเนลล์ที่สร้างโปรตีนคืออะไร?",
+ a:["ไรโบโซม","ไลโซโซม","แวคิวโอล","คลอโรพลาสต์"], c:0},
+{q:"7) DNA อยู่ที่ใดในเซลล์ยูคาริโอต?",
+ a:["ไซโทพลาซึม","ไรโบโซม","นิวเคลียส","เยื่อหุ้มเซลล์"], c:2},
+{q:"8) การลำเลียงสารโดยไม่ใช้พลังงานเรียกว่าอะไร?",
+ a:["Active transport","Diffusion","Endocytosis","Exocytosis"], c:1},
+{q:"9) เอนไซม์ทำงานดีที่สุดที่อะไร?",
+ a:["pH และอุณหภูมิเหมาะสม","ร้อนจัด","เย็นจัด","ไม่มีออกซิเจน"], c:0},
+{q:"10) คลอโรพลาสต์พบในเซลล์ใด?",
+ a:["เซลล์สัตว์","เซลล์พืช","แบคทีเรีย","ไวรัส"], c:1}
+];
+
+let current = 0;
+let score = 0;
+let timeLeft = 15;
+let timer;
+
+function loadQuestion() {
+    if(current >= questions.length){
+        document.getElementById("quiz").innerHTML = "<h2>จบเกมแล้ว!</h2>";
+        document.getElementById("result").innerHTML = "คะแนน: " + score + " / 10";
+        document.getElementById("timer").innerHTML = "";
+        return;
+    }
+
+    let q = questions[current];
+    let html = "<h3>" + q.q + "</h3>";
+    q.a.forEach((ans,i)=>{
+        html += `<button onclick="checkAnswer(${i})">${ans}</button>`;
+    });
+    document.getElementById("quiz").innerHTML = html;
+
+    timeLeft = 15;
+    startTimer();
+}
+
+function startTimer(){
+    document.getElementById("timer").innerHTML = "⏱ เวลา: " + timeLeft + " วินาที";
+    timer = setInterval(()=>{
+        timeLeft--;
+        document.getElementById("timer").innerHTML = "⏱ เวลา: " + timeLeft + " วินาที";
+        if(timeLeft <= 0){
+            clearInterval(timer);
+            current++;
+            loadQuestion();
+        }
+    },1000);
+}
+
+function checkAnswer(i){
+    clearInterval(timer);
+    if(i === questions[current].c){
+        score++;
+    }
+    current++;
+    loadQuestion();
+}
+
+function restartGame(){
+    current = 0;
+    score = 0;
+    loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
