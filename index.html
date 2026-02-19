@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biology Quiz Ultra</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap');
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    font-family:'Prompt',sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    width:95%;
+    max-width:800px;
+    padding:35px;
+    border-radius:25px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    box-shadow:0 20px 50px rgba(0,0,0,0.5);
+    position:relative;
+    animation:fadeIn .6s ease;
+}
+
+h1{
+    text-align:center;
+    color:#38bdf8;
+    margin-top:0;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin:10px 0;
+    border:none;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    background:linear-gradient(45deg,#334155,#475569);
+    color:white;
+    transition:all .25s ease;
+}
+
+button:hover{
+    transform:scale(1.05);
+    box-shadow:0 5px 20px rgba(0,0,0,0.4);
+}
+
+.correct{
+    background:linear-gradient(45deg,#00c853,#64dd17)!important;
+}
+
+.wrong{
+    background:linear-gradient(45deg,#d50000,#ff1744)!important;
+}
+
+#timer{
+    font-size:20px;
+    color:#facc15;
+    text-align:center;
+    margin-bottom:10px;
+}
+
+#score{
+    margin-top:10px;
+    font-size:18px;
+    text-align:center;
+}
+
+#combo{
+    text-align:center;
+    font-size:22px;
+    color:#f472b6;
+}
+
+#explanation{
+    margin-top:15px;
+    text-align:center;
+    color:#fde047;
+    min-height:50px;
+}
+
+.shake{
+    animation:shake .4s;
+}
+
+@keyframes shake{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-8px)}
+    50%{transform:translateX(8px)}
+    75%{transform:translateX(-8px)}
+    100%{transform:translateX(0)}
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(20px)}
+    to{opacity:1; transform:translateY(0)}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>🧬 Biology Quiz ULTRA</h1>
+<div id="timer"></div>
+<div id="question"></div>
+<div id="answers"></div>
+<div id="score"></div>
+<div id="combo"></div>
+<div id="explanation"></div>
+</div>
+
+<script>
+
+const correctSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+const wrongSound = new Audio("https://actions.google.com/sounds/v1/cartoon/boing.ogg");
+
+let allQuestions=[
+
+{level:"easy",q:"หน่วยพื้นฐานของสิ่งมีชีวิตคืออะไร",
+a:["เซลล์","อวัยวะ","เนื้อเยื่อ","ระบบอวัยวะ"],
+c:0,ex:"เซลล์คือหน่วยพื้นฐานที่เล็กที่สุดที่ยังมีชีวิต"},
+
+{level:"easy",q:"พืชสร้างอาหารโดยกระบวนการใด",
+a:["หายใจ","สังเคราะห์แสง","ย่อยอาหาร","คายน้ำ"],
+c:1,ex:"พืชสร้างกลูโคสโดยสังเคราะห์แสง"},
+
+{level:"medium",q:"DNA มีเบสกี่ชนิด",
+a:["2","3","4","5"],
+c:2,ex:"DNA มีเบส 4 ชนิด A T C G"},
+
+{level:"medium",q:"ไมโทซิสให้เซลล์ลูกกี่เซลล์",
+a:["1","2","3","4"],
+c:1,ex:"ไมโทซิสได้เซลล์ลูก 2 เซลล์เหมือนเดิม"},
+
+{level:"hard",q:"กระบวนการใดสร้าง ATP มากที่สุด",
+a:["Glycolysis","Krebs Cycle","Electron Transport Chain","Fermentation"],
+c:2,ex:"ETC สร้าง ATP มากที่สุด"},
+
+{level:"hard",q:"ฮอร์โมนใดควบคุมระดับแคลเซียมในเลือด",
+a:["อินซูลิน","กลูคากอน","พาราไทรอยด์ฮอร์โมน","อะดรีนาลีน"],
+c:2,ex:"พาราไทรอยด์ฮอร์โมนควบคุมแคลเซียมในเลือด"},
+
+{level:"hard",q:"RNA Polymerase ทำหน้าที่ใด",
+a:["จำลอง DNA","สร้าง RNA","แปลรหัสโปรตีน","ตัดต่อยีน"],
+c:1,ex:"RNA polymerase สร้าง RNA จาก DNA"},
+
+{level:"medium",q:"โครโมโซมมนุษย์มีกี่คู่",
+a:["21","22","23","24"],
+c:2,ex:"มนุษย์มี 23 คู่ รวม 46 แท่ง"},
+
+{level:"easy",q:"อวัยวะใดใช้แลกเปลี่ยนก๊าซ",
+a:["หัวใจ","ตับ","ปอด","ไต"],
+c:2,ex:"ปอดใช้แลกเปลี่ยน O2 และ CO2"},
+
+{level:"hard",q:"Competitive inhibition คืออะไร",
+a:["จับที่ active site","จับที่ allosteric site","ทำลายเอนไซม์","เพิ่ม pH"],
+c:0,ex:"Competitive inhibitor แย่งจับ active site"}
+];
+
+let quizQuestions=[];
+let current=0;
+let score=0;
+let combo=0;
+let timeLeft=20;
+let timer;
+
+const questionEl=document.getElementById("question");
+const answersEl=document.getElementById("answers");
+const scoreEl=document.getElementById("score");
+const timerEl=document.getElementById("timer");
+const comboEl=document.getElementById("combo");
+const explanationEl=document.getElementById("explanation");
+
+function shuffle(arr){
+return arr.sort(()=>Math.random()-0.5);
+}
+
+function startGame(){
+quizQuestions=shuffle([...allQuestions]).slice(0,10);
+current=0;
+score=0;
+combo=0;
+loadQuestion();
+}
+
+function loadQuestion(){
+if(current>=quizQuestions.length){
+questionEl.innerHTML="🎉 จบเกม! คะแนนรวม "+score;
+answersEl.innerHTML="";
+timerEl.innerHTML="";
+return;
+}
+
+let q=quizQuestions[current];
+questionEl.innerHTML="("+q.level.toUpperCase()+") "+q.q;
+answersEl.innerHTML="";
+scoreEl.innerHTML="คะแนน: "+score+" | Combo: "+combo;
+
+q.a.forEach((choice,i)=>{
+let btn=document.createElement("button");
+btn.innerText=choice;
+btn.onclick=()=>checkAnswer(btn,i===q.c,q.level);
+answersEl.appendChild(btn);
+});
+
+startTimer();
+}
+
+function startTimer(){
+timeLeft=20;
+timerEl.innerHTML="⏳ "+timeLeft;
+clearInterval(timer);
+timer=setInterval(()=>{
+timeLeft--;
+timerEl.innerHTML="⏳ "+timeLeft;
+if(timeLeft<=0){
+clearInterval(timer);
+combo=0;
+current++;
+loadQuestion();
+}
+},1000);
+}
+
+function checkAnswer(btn,isCorrect,level){
+clearInterval(timer);
+let container=document.querySelector(".container");
+let q=quizQuestions[current];
+
+if(isCorrect){
+btn.classList.add("correct");
+correctSound.play();
+combo++;
+
+let base=level==="easy"?1:level==="medium"?2:3;
+let bonus=combo>=3?combo:0;
+score+=base+bonus;
+
+explanationEl.innerHTML="✅ ถูกต้อง!<br>"+q.ex;
+
+}else{
+btn.classList.add("wrong");
+wrongSound.play();
+container.classList.add("shake");
+setTimeout(()=>container.classList.remove("shake"),400);
+combo=0;
+explanationEl.innerHTML="❌ ผิด!<br>✔ คำตอบที่ถูกคือ <b>"+q.a[q.c]+"</b><br>"+q.ex;
+}
+
+setTimeout(()=>{
+explanationEl.innerHTML="";
+current++;
+loadQuestion();
+},2000);
+}
+
+startGame();
+</script>
+</body>
+</html>
