@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bio Quiz Pro</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap');
+
+*{box-sizing:border-box;}
+
+body{
+    margin:0;
+    font-family:'Prompt', sans-serif;
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
+}
+
+.card{
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(15px);
+    padding:30px;
+    border-radius:20px;
+    width:90%;
+    max-width:500px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,0.4);
+}
+
+h1{margin-top:0;}
+
+.timer{
+    font-size:18px;
+    margin-bottom:10px;
+    color:#ffd700;
+}
+
+.progress{
+    font-size:14px;
+    opacity:0.8;
+    margin-bottom:15px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:none;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+    background: linear-gradient(45deg,#ff416c,#ff4b2b);
+    color:white;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.correct{
+    background: linear-gradient(45deg,#00c853,#64dd17) !important;
+}
+
+.wrong{
+    background: linear-gradient(45deg,#d50000,#ff1744) !important;
+}
+
+.restart{
+    margin-top:15px;
+    background: linear-gradient(45deg,#00c6ff,#0072ff);
+}
+
+.result{
+    margin-top:15px;
+    font-size:18px;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>🧬 Bio Quiz Pro</h1>
+    <div class="timer">⏳ เวลา: <span id="time">60</span> วินาที</div>
+    <div class="progress">ข้อ <span id="current">1</span> / 10</div>
+    <h2 id="question"></h2>
+    <div id="choices"></div>
+    <div class="result" id="score"></div>
+    <button class="restart" onclick="restartGame()">🔄 เล่นใหม่</button>
+</div>
+
+<script>
+const correctSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+const wrongSound = new Audio("https://actions.google.com/sounds/v1/cartoon/boing.ogg");
+
+const questions = [
+{q:"หน่วยพื้นฐานของสิ่งมีชีวิตคืออะไร?",choices:["อะตอม","เซลล์","เนื้อเยื่อ","อวัยวะ"],answer:1},
+{q:"DNA ย่อมาจากอะไร?",choices:["Deoxyribonucleic Acid","Dynamic Network Acid","Digital Nerve Array","Double Natural Acid"],answer:0},
+{q:"กระบวนการสังเคราะห์ด้วยแสงเกิดที่ใด?",choices:["ไมโทคอนเดรีย","คลอโรพลาสต์","นิวเคลียส","ไรโบโซม"],answer:1},
+{q:"เลือดสีแดงเกิดจากสารใด?",choices:["คลอโรฟิลล์","ฮีโมโกลบิน","กลูโคส","อินซูลิน"],answer:1},
+{q:"มนุษย์มีโครโมโซมกี่คู่?",choices:["21 คู่","22 คู่","23 คู่","24 คู่"],answer:2},
+{q:"อวัยวะใดทำหน้าที่สูบฉีดเลือด?",choices:["ปอด","หัวใจ","ตับ","ไต"],answer:1},
+{q:"กระบวนการแบ่งเซลล์ปกติเรียกว่าอะไร?",choices:["ไมโอซิส","ไมโทซิส","ฟิวชัน","รีพลิเคชัน"],answer:1},
+{q:"สารอาหารที่ให้พลังงานหลักคือ?",choices:["โปรตีน","ไขมัน","คาร์โบไฮเดรต","วิตามิน"],answer:2},
+{q:"พืชดูดน้ำผ่านส่วนใด?",choices:["ใบ","ลำต้น","ราก","ดอก"],answer:2},
+{q:"ระบบใดควบคุมการทำงานของร่างกาย?",choices:["ระบบย่อยอาหาร","ระบบประสาท","ระบบหายใจ","ระบบขับถ่าย"],answer:1}
+];
+
+let current = 0;
+let score = 0;
+let timeLeft = 60;
+let timer;
+
+const questionEl = document.getElementById("question");
+const choicesEl = document.getElementById("choices");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
+const currentEl = document.getElementById("current");
+
+function showQuestion(){
+    if(current >= questions.length){
+        endGame();
+        return;
+    }
+
+    const q = questions[current];
+    questionEl.innerText = q.q;
+    choicesEl.innerHTML = "";
+    currentEl.innerText = current + 1;
+
+    q.choices.forEach((choice,index)=>{
+        const btn = document.createElement("button");
+        btn.innerText = choice;
+        btn.onclick = ()=>checkAnswer(btn,index);
+        choicesEl.appendChild(btn);
+    });
+}
+
+function checkAnswer(button,index){
+    const correctIndex = questions[current].answer;
+    const buttons = document.querySelectorAll("#choices button");
+
+    buttons.forEach(btn=>btn.disabled=true);
+
+    if(index === correctIndex){
+        button.classList.add("correct");
+        correctSound.play();
+        score++;
+    } else {
+        button.classList.add("wrong");
+        buttons[correctIndex].classList.add("correct");
+        wrongSound.play();
+    }
+
+    setTimeout(()=>{
+        current++;
+        showQuestion();
+    },1000);
+}
+
+function endGame(){
+    clearInterval(timer);
+    questionEl.innerText = "🎉 เกมจบแล้ว!";
+    choicesEl.innerHTML = "";
+    scoreEl.innerText = "คะแนนของคุณ: " + score + " / 10";
+}
+
+function countdown(){
+    timeLeft--;
+    timeEl.innerText = timeLeft;
+    if(timeLeft <= 0){
+        endGame();
+    }
+}
+
+function restartGame(){
+    current = 0;
+    score = 0;
+    timeLeft = 60;
+    scoreEl.innerText = "";
+    timeEl.innerText = timeLeft;
+    clearInterval(timer);
+    timer = setInterval(countdown,1000);
+    showQuestion();
+}
+
+timer = setInterval(countdown,1000);
+showQuestion();
+</script>
+
+</body>
+</html>
